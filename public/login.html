@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Ruang Kopi</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-form">
+      <h2>Welcome to Ruang Kopi</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username/Email</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-login">Login</button>
+      </form>
+      <h4>didn't have an account?<a id="signupButton" class="btn-signup" href="register.html" style="font-weight: 600;">Sign Up</a></h4>
+      <p>or</p>
+      <button id="guestLoginButton" class="btn-guest">Login as Guest</button>
+    </div>
+  </div>
+
+  <div id="guestPopup" class="popup">
+    <div class="popup-content">
+      <span id="popupClose" class="popup-close">&times;</span>
+      <p>If you create a "coffee room" user account, every purchase will get points that can be redeemed.</p>
+    </div>
+  </div>
+
+  <script src="../login.js"></script>
+</body>
+</html>
