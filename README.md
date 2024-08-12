@@ -1,5 +1,5 @@
 Description:
-Ruang Kopi is a coffee shop that serves customers (general and coffee lovers) using a website to place orders (paperless). where, customers will open an interactive website or scan qr at the table to see the menu, menu information, and place orders. There are still shortcomings on this website, because when migrating to the database there is still an error, so registration or login is still constrained. However, you can log in using the "as Guest" account. This website is still under development for the future.
+Ruang Kopi is a coffee shop that serves customers (general and coffee lovers) by using a website to place orders (paperless). where, customers will open an interactive website or scan the qr on the table to see the menu, menu information, and place an order. There are still shortcomings on this website, because when migrating to the database there is still an error, so registration or login is still constrained, and in the checkout order section there are still bugs and errors when converting prices (strings) into numbers (integers). However, you can login using the "as Guest" account. This website is still under development for the future.
 
 data structure:
 ruang kopi-website/

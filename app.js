@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const exploreButtons = document.querySelectorAll('.btn-explore, .btn-coffee, .btn-nonCoffee, .btn-food, .btn-seasonal');
-exploreButtons.forEach(button => {
+  exploreButtons.forEach(button => {
   button.addEventListener('click', (event) => {
     event.preventDefault();
     const targetElement = document.querySelector(event.target.getAttribute('href'));
@@ -151,7 +151,7 @@ exploreButtons.forEach(button => {
         const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleString() : 'Date not available';
         const orderItems = order.items.map(item => `
           <li class = order-list data-menu-id="${item.menuId}">
-            ${item.menuName || 'Item name not available'} (x${item.quantity || 'N/A'}) - Rp. ${item.menuPrice || 'Price not available'}
+            ${item.menuName || 'Item name not available'} - Rp. ${item.menuPrice || 'Price not available'}
             <div class = button-order>
             <button class="remove-item">-</button>
             <span class="quantity-display">${item.quantity || 0}</span>
@@ -169,7 +169,14 @@ exploreButtons.forEach(button => {
             <ul>
               ${orderItems}
             </ul>
-            <p>Total: Rp. <span class="order-total">0</span></p>
+            <div class="checkout-order">
+              <p>Total Harga: Rp. <span class="order-total">0</span></p>
+              <button class="btn-checkout">Checkout Order</button>
+              <div id="qr-code-container" style="display: none;">
+                <p>Your QR Code:</p>
+                <div id="qr-code"></div>
+              </div>
+            </div>
           </div>
         `;
         ordersContainer.innerHTML += orderItemHTML;
@@ -184,12 +191,33 @@ exploreButtons.forEach(button => {
       document.querySelectorAll('.delete-item').forEach(button => {
         button.addEventListener('click', handleDeleteItem);
       });
+      document.querySelectorAll('.btn-checkout').forEach(button => {
+        button.addEventListener('click', handleCheckout);
+      });
 
       Object.keys(orderMap).forEach(orderId => {
         updateOrderTotal(orderId);
       });
     })
     .catch(error => console.error('Error fetching orders:', error));
+  }
+
+  function handleCheckout(event) {
+    const orderElement = event.target.closest('.order-item');
+    const orderId = orderElement.getAttribute('data-order-id');
+
+    fetch(`http://localhost:3000/orders/${orderId}/checkout`, {
+      method: 'POST',
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert(`Checkout successful!\nOrder ID: ${orderId}\nTotal Price: Rp. ${data.totalPrice}`);
+      } else {
+        alert('Error during checkout.');
+      }
+    })
+    .catch(error => console.error('Error checking out:', error));
   }
 
   function handleAddItem(event) {

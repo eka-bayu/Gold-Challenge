@@ -24,6 +24,8 @@ class OrderController {
 
   static async getOrderById(req, res) {
     try {
+      const orderId = req.params.id;
+      console.log(`Fetching order with order ID: ${orderId}`);
       const order = await Order.findById(req.params.id); 
       if (order) {
         res.json(order);
@@ -36,8 +38,8 @@ class OrderController {
   }
 
   static async createOrder(req, res) {
-    const { userId, items } = req.body;
-    console.log('Received order request with:', { userId, items });
+    const { userId,orderId, items } = req.body;
+    console.log('Received order request with:', { userId, orderId, items });
 
     if (!Array.isArray(items)) {
       return res.status(400).json({ message: 'Items should be an array' });
@@ -64,12 +66,13 @@ class OrderController {
   }
 
   // Update item quantity in an order
-static async updateItemQuantity(req, res) {
+  static async updateItemQuantity(req, res) {
   const { orderId, menuId } = req.params;
   const { quantityChange } = req.body;
 
   try {
     const order = await Order.findById(orderId);
+    console.log(`${order}`);
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
@@ -91,8 +94,8 @@ static async updateItemQuantity(req, res) {
   }
 }
 
-// Delete an item from an order
-static async deleteOrderItem(req, res) {
+  // Delete an item from an order
+  static async deleteOrderItem(req, res) {
   const { orderId, menuId } = req.params;
 
   try {
@@ -153,6 +156,35 @@ static async deleteOrderItem(req, res) {
       res.status(500).json({ message: 'Error deleting order', error });
     }
   }
+
+  static async checkoutOrder(req, res) {
+    try {
+      const { orderId } = req.params;
+      console.log(`Fetching order with order ID: ${orderId}`);
+      const order = await Order.findById(orderId);
+  
+      if (!order) {
+        return res.status(404).json({ success: false, message: 'Order not found' });
+      } 
+  
+      if (!Array.isArray(order.items)) {
+        console.error('Order items is not an array');
+        return res.status(500).json({ success: false, message: 'Invalid order data' });
+      }
+  
+      const totalPrice = order.items.reduce((sum, item) => {
+        const itemPrice = parseInt(item.itemPrice, 10) || 0;
+        const quantity = item.quantity || 0;
+        return sum + (itemPrice * quantity);
+      }, 0);
+
+      res.json({ success: true});
+      
+    } catch (error) {
+      console.error('Error checking out order:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+  }  
 }
 
 module.exports = OrderController;
