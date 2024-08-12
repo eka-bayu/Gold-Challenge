@@ -185,7 +185,6 @@ exploreButtons.forEach(button => {
         button.addEventListener('click', handleDeleteItem);
       });
 
-      // Update total for each order
       Object.keys(orderMap).forEach(orderId => {
         updateOrderTotal(orderId);
       });
@@ -234,16 +233,13 @@ exploreButtons.forEach(button => {
   
     deleteOrderItem(orderId, menuId);
   
-    // Periksa apakah semua item dalam pesanan telah dihapus
     const remainingItems = orderElement.querySelectorAll('li').length;
     
     if (remainingItems === 0) {
-      orderElement.remove(); // Hapus elemen pesanan dari halaman
+      orderElement.remove(); 
   
-      // Cek apakah masih ada pesanan lain di halaman
       const ordersContainer = document.getElementById('ordersContainer');
       if (ordersContainer.querySelectorAll('.order-item').length === 0) {
-        // Jika tidak ada pesanan lagi, tampilkan pesan "No orders found"
         ordersContainer.innerHTML = `
           <div class="no-orders">
             <img src="../public/image/empty-cart.jpg" alt="No orders found" class="no-orders-image">
