@@ -1,50 +1,60 @@
 document.addEventListener('DOMContentLoaded', () => {
   
-  fetchAndDisplayMenus('Coffee', 'coffeeMenuList');
-  fetchAndDisplayMenus('Non-Coffee', 'nonCoffeeMenuList');
-  fetchAndDisplayMenus('Food & Snack', 'foodMenuList');
-  fetchAndDisplayMenus('Seasonal', 'seasonalMenuList');
+  fetchAndDisplayAllMenus();
   fetchAndDisplayOrders();
 
-  let cartItemCount = 0;
+    function fetchAndDisplayAllMenus() {
+      const categories = [
+        { category: 'Coffee', containerId: 'coffeeMenuList' },
+        { category: 'Non-Coffee', containerId: 'nonCoffeeMenuList' },
+        { category: 'Food & Snack', containerId: 'foodMenuList' },
+        { category: 'Seasonal', containerId: 'seasonalMenuList' }
+      ];
+    
+      categories.forEach(({ category, containerId }) => {
+        fetchAndDisplayMenus(category, containerId);
+      });
+    }
   
-  function fetchAndDisplayMenus(category, containerId) {
-    const menuList = document.getElementById(containerId);
-
-    fetch(`http://localhost:3000/menus/category/${category}`)
-      .then(response => response.json())
-      .then(menus => {
-        menuList.innerHTML = ''; 
-        menus.forEach(menu => {
-          const menuItem = `
-            <div class="menu-item">
-              <div class="item">
-                <img src="${menu.image}" alt="${menu.name}">
-                <div class="content">
-                  <h3>${menu.name}</h3>
-                  <p>${menu.description}</p>
-                  <p class="price">Rp. ${menu.price}</p>
+    let cartItemCount = 0;
+  
+    function fetchAndDisplayMenus(category, containerId) {
+      const menuList = document.getElementById(containerId);
+  
+      fetch(`http://localhost:3000/menus/category/${category}`)
+        .then(response => response.json())
+        .then(menus => {
+          menuList.innerHTML = ''; 
+          menus.forEach(menu => {
+            const menuItem = `
+              <div class="menu-item">
+                <div class="item">
+                  <img src="${menu.image}" alt="${menu.name}">
+                  <div class="content">
+                    <h3>${menu.name}</h3>
+                    <p>${menu.description}</p>
+                    <p class="price">Rp. ${menu.price}</p>
+                  </div>
                 </div>
+                <button class="btn-order" data-menu-id="${menu.id}" data-menu-name="${menu.name}"
+                 data-menu-price=${menu.price}>Add to Cart</button>
               </div>
-              <button class="btn-order" data-menu-id="${menu.id}" data-menu-name="${menu.name}"
-               data-menu-price=${menu.price}>Add to Cart</button>
-            </div>
-          `;
-          menuList.innerHTML += menuItem;
-        });
-
-        const orderButtons = document.querySelectorAll('.btn-order');
-        orderButtons.forEach(button => {
-          button.addEventListener('click', () => {
-            const menuId = button.getAttribute('data-menu-id');
-            const menuName = button.getAttribute('data-menu-name');
-            const menuPrice = button.getAttribute('data-menu-price');
-            orderMenu(menuId, menuName, menuPrice);
+            `;
+            menuList.innerHTML += menuItem;
           });
-        });
       })
       .catch(error => console.error('Error fetching menus:', error));
   }
+
+  document.body.addEventListener('click', (event) => {
+    if (event.target.classList.contains('btn-order')) {
+      const button = event.target;
+      const menuId = button.getAttribute('data-menu-id');
+      const menuName = button.getAttribute('data-menu-name');
+      const menuPrice = button.getAttribute('data-menu-price');
+      orderMenu(menuId, menuName, menuPrice);
+    }
+  });
 
   function generateOrderId(menuId) {
     const now = new Date();
@@ -88,8 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
     cartNotification.textContent = count;
   }
 
-  const exploreButton = document.querySelector('.btn-explore','.btn-coffee', '.btn-nonCoffe', '.btn-food', '.btn-seasonal');
-  exploreButton.addEventListener('click', (event) => {
+  const exploreButtons = document.querySelectorAll('.btn-explore, .btn-coffee, .btn-nonCoffee, .btn-food, .btn-seasonal');
+exploreButtons.forEach(button => {
+  button.addEventListener('click', (event) => {
     event.preventDefault();
     const targetElement = document.querySelector(event.target.getAttribute('href'));
 
@@ -100,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+});
+
 
   function fetchAndDisplayOrders() {
     const ordersContainer = document.getElementById('ordersContainer');
@@ -109,9 +122,14 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(orders => {
       ordersContainer.innerHTML = '';
       if (orders.length === 0) {
-        ordersContainer.innerHTML = '<p>No orders found.</p>';
+        ordersContainer.innerHTML = `
+          <div class="no-orders">
+            <img src="../public/image/empty-cart.jpg" alt="No orders found" class="no-orders-image">
+            <p>No orders found.</p>
+            <a href=index.html class = btn-home>Back to Home</a>
+          </div>`;
       } 
-      
+
       const orderMap = {};
 
       orders.forEach(order => {
@@ -213,9 +231,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuId = li.getAttribute('data-menu-id');
     
     li.remove();
-
+  
     deleteOrderItem(orderId, menuId);
-    updateOrderTotal(orderId);
+  
+    // Periksa apakah semua item dalam pesanan telah dihapus
+    const remainingItems = orderElement.querySelectorAll('li').length;
+    
+    if (remainingItems === 0) {
+      orderElement.remove(); // Hapus elemen pesanan dari halaman
+  
+      // Cek apakah masih ada pesanan lain di halaman
+      const ordersContainer = document.getElementById('ordersContainer');
+      if (ordersContainer.querySelectorAll('.order-item').length === 0) {
+        // Jika tidak ada pesanan lagi, tampilkan pesan "No orders found"
+        ordersContainer.innerHTML = `
+          <div class="no-orders">
+            <img src="../public/image/empty-cart.jpg" alt="No orders found" class="no-orders-image">
+            <p>No orders found.</p>
+            <a href="index.html" class="btn-home">Back to Home</a>
+          </div>`;
+      }
+    } else {
+      updateOrderTotal(orderId);
+    }
   }
 
   function updateOrderTotal(orderId) {
