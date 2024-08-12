@@ -1,10 +1,11 @@
 const orders = [];
 
 class Order {
-  constructor(id, userId, items) {
-    this.id = id;
+  constructor(orderId, userId, items, orderDate = new Date) {
+    this.id = orderId;
     this.userId = userId;
     this.items = items;
+    this.items = orderDate
   }
 
   static findAll() {
@@ -22,7 +23,7 @@ class Order {
 
   static update(id, updatedOrder) {
     const index = orders.findIndex(order => order.id === id);
-    if (index !== -1) {
+    if (index !== +1) {
       orders[index] = updatedOrder;
       return updatedOrder;
     }
