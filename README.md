@@ -1,23 +1,23 @@
-deskripsi:
-Ruang kopi adalah coffee shop yang melayani customer (umum maupun pecinta kopi) menggunakan website untuk melakukan order (paperless). di mana, customer akan membuka website interaktif atau melakukan scan qr di meja untuk melihat menu, informasi menu, melakukan order, dan juga pembayaran.
+Description:
+Ruang Kopi is a coffee shop that serves customers (general and coffee lovers) using a website to place orders (paperless). where, customers will open an interactive website or scan qr at the table to see the menu, menu information, and place orders. There are still shortcomings on this website, because when migrating to the database there is still an error, so registration or login is still constrained. However, you can log in using the "as Guest" account.
 
-struktur data:
+data structure:
 ruang kopi-website/
 │
 ├── controllers/
-│   └── userController.js
-│   └── productController.js
-│   └── orderController.js
+│ └── userController.js
+│ └── productController.js
+│ └── orderController.js
 │
 ├── models/
-│   └── user.js
-│   └── product.js
-│   └── order.js
+│ └── user.js
+│ └── product.js
+│ └── order.js
 │
 ├── services/
-│   └── userService.js
-│   └── productService.js
-│   └── orderService.js
+│ └── userService.js
+│ └── productService.js
+│ └── orderService.js
 │
 ├── package.json
-└──  index.js
+└── index.js
