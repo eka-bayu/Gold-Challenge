@@ -173,12 +173,12 @@ class OrderController {
       }
   
       const totalPrice = order.items.reduce((sum, item) => {
-        const itemPrice = parseInt(item.itemPrice, 10) || 0;
+        const itemPrice = parseInt(item.menuPrice, 10) || 0;
         const quantity = item.quantity || 0;
         return sum + (itemPrice * quantity);
       }, 0);
 
-      res.json({ success: true});
+      res.json({ success: true, totalPrice});
       
     } catch (error) {
       console.error('Error checking out order:', error);

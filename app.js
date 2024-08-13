@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  
+
   fetchAndDisplayAllMenus();
   fetchAndDisplayOrders();
 
@@ -56,16 +56,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  function generateOrderId(menuId) {
+  function generateOrderId() {
     const now = new Date();
     const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
     const randomNum = Math.floor(Math.random() * 10000);
-    return `${dateStr}-${menuId}-${randomNum}`;
+    return `${dateStr}-${randomNum}`;
   }
-
+  
   function orderMenu(menuId, menuName, menuPrice) {
-    const orderId = generateOrderId(menuId);
-
+    // Ambil orderId dari localStorage atau buat yang baru jika tidak ada
+    let orderId = localStorage.getItem('activeOrderId');
+    
+    if (!orderId) {
+      orderId = generateOrderId();
+      localStorage.setItem('activeOrderId', orderId);
+    }
+  
     fetch('http://localhost:3000/orders', {
       method: 'POST',
       headers: {
@@ -87,11 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
       cartItemCount++;
       localStorage.setItem('cartItemCount', cartItemCount);
       updateCartNotification(cartItemCount);
-
-      alert(`Order placed successfully!\nOrder ID: ${data.orderId || orderId}\nItem: ${menuName}\nQuantity: 1 \nPrice: ${menuPrice}`);
+  
+      alert(`Order placed successfully!\nOrder ID: ${orderId}\nItem: ${menuName}\nQuantity: 1 \nPrice: ${menuPrice}`);
     })
     .catch(error => console.error('Error placing order:', error));
   }
+  
 
   function updateCartNotification(count) {
     const cartNotification = document.querySelector('.cart-notification');
@@ -114,89 +121,96 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-  function fetchAndDisplayOrders() {
-    const ordersContainer = document.getElementById('ordersContainer');
+function fetchAndDisplayOrders() {
+  const ordersContainer = document.getElementById('ordersContainer');
 
-    fetch('http://localhost:3000/orders')
-    .then(response => response.json())
-    .then(orders => {
-      ordersContainer.innerHTML = '';
-      if (orders.length === 0) {
-        ordersContainer.innerHTML = `
-          <div class="no-orders">
-            <img src="../public/image/empty-cart.jpg" alt="No orders found" class="no-orders-image">
-            <p>No orders found.</p>
-            <a href=index.html class = btn-home>Back to Home</a>
-          </div>`;
-      } 
+  fetch('http://localhost:3000/orders')
+  .then(response => response.json())
+  .then(orders => {
+     ordersContainer.innerHTML = '';
+    if (orders.length === 0) {
+      ordersContainer.innerHTML = `
+        <div class="no-orders">
+          <img src="../public/image/empty-cart.jpg" alt="No orders found" class="no-orders-image">
+          <p>No orders found.</p>
+          <a href="index.html" class="btn-home">Back to Home</a>
+        </div>`;
+     }
 
-      const orderMap = {};
+    const orderMap = {};
 
-      orders.forEach(order => {
-        if (!orderMap[order.orderId]) {
-          orderMap[order.orderId] = {
-            orderDate: order.orderDate,
-            userName: order.userName,
-            items: []
-          };
-        }
+    orders.forEach(order => {
+      if (!orderMap[order.orderId]) {
+        orderMap[order.orderId] = {
+          orderDate: order.orderDate,
+          userName: order.userName,
+          items: []
+        };
+      }
 
-        order.items.forEach(item => {
-          orderMap[order.orderId].items.push(item);
-        });
+      order.items.forEach(item => {
+        orderMap[order.orderId].items.push(item);
       });
+    });
 
-      Object.keys(orderMap).forEach(orderId => {
-        const order = orderMap[orderId];
-        const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleString() : 'Date not available';
-        const orderItems = order.items.map(item => `
-          <li class = order-list data-menu-id="${item.menuId}">
-            ${item.menuName || 'Item name not available'} - Rp. ${item.menuPrice || 'Price not available'}
-            <div class = button-order>
+    Object.keys(orderMap).forEach(orderId => {
+      const order = orderMap[orderId];
+      const orderDate = order.orderDate ? new Date(order.orderDate).toLocaleString() : 'Date not available';
+      const orderItems = order.items.map(item => `
+        <li class="order-list" data-menu-id="${item.menuId}">
+          ${item.menuName || 'Item name not available'} - Rp. ${item.menuPrice || 'Price not available'}
+          <div class="button-order">
             <button class="remove-item">-</button>
             <span class="quantity-display">${item.quantity || 0}</span>
             <button class="add-item">+</button>
             <button class="delete-item">Delete</button>
-            </div>
-          </li>
-        `).join('');
+          </div>
+        </li>
+      `).join('');
 
-        const orderItemHTML = `
-          <div class="order-item" data-order-id="${orderId}">
-            <h3>Order ID: ${orderId || 'ID not available'}</h3>
-            <p>Date: ${orderDate}</p>
-            <p>User: ${order.userName || 'Guest'}</p>
-            <ul>
-              ${orderItems}
-            </ul>
-            <div class="checkout-order">
-              <p>Total Harga: Rp. <span class="order-total">0</span></p>
-              <button class="btn-checkout">Checkout Order</button>
-              <div id="qr-code-container" style="display: none;">
-                <p>Your QR Code:</p>
-                <div id="qr-code"></div>
-              </div>
+      const orderItemHTML = `
+        <div class="order-item" data-order-id="${orderId}">
+          <h3>Order ID: ${orderId || 'ID not available'}</h3>
+          <p>Date: ${orderDate}</p>
+          <p>User: ${order.userName || 'Guest'}</p>
+          <ul>
+            ${orderItems}
+          </ul>
+          <div class="checkout-order">
+            <p>Total Harga: Rp. <span class="order-total">0</span></p>
+            <button class="btn-checkout">Checkout Order</button>
+          </div>
+          <div id="checkout-popup" class="popup">
+            <div class="popup-content">
+              <span class="close-popup">&times;</span>
+              <h3>Order Confirmation</h3>
+              <p>Order ID: <span id="popup-order-id"></span></p>
+              <p>Total Price: Rp. <span id="popup-total-price"></span></p>
+              <p>Saat ini, sistem pembayaran QR Code masih dalam pengembangan,
+              silakan pergi ke kasir untuk melakukan pembayaran.</p>
+              <button class="btn-close-popup">Close</button>
             </div>
           </div>
-        `;
-        ordersContainer.innerHTML += orderItemHTML;
-      });
+        </div>
+      `;
+      ordersContainer.innerHTML += orderItemHTML;
+    });
 
-      document.querySelectorAll('.add-item').forEach(button => {
-        button.addEventListener('click', handleAddItem);
-      });
-      document.querySelectorAll('.remove-item').forEach(button => {
-        button.addEventListener('click', handleRemoveItem);
-      });
-      document.querySelectorAll('.delete-item').forEach(button => {
-        button.addEventListener('click', handleDeleteItem);
-      });
-      document.querySelectorAll('.btn-checkout').forEach(button => {
-        button.addEventListener('click', handleCheckout);
-      });
+    document.querySelectorAll('.add-item').forEach(button => {
+      button.addEventListener('click', handleAddItem);
+    });
+    document.querySelectorAll('.remove-item').forEach(button => {
+      button.addEventListener('click', handleRemoveItem);
+    });
+    document.querySelectorAll('.delete-item').forEach(button => {
+      button.addEventListener('click', handleDeleteItem);
+    });
+    document.querySelectorAll('.btn-checkout').forEach(button => {
+      button.addEventListener('click', handleCheckout);
+    });
 
-      Object.keys(orderMap).forEach(orderId => {
-        updateOrderTotal(orderId);
+    Object.keys(orderMap).forEach(orderId => {
+      updateOrderTotal(orderId);
       });
     })
     .catch(error => console.error('Error fetching orders:', error));
@@ -207,18 +221,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const orderId = orderElement.getAttribute('data-order-id');
 
     fetch(`http://localhost:3000/orders/${orderId}/checkout`, {
-      method: 'POST',
+      method: 'GET',
     })
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        alert(`Checkout successful!\nOrder ID: ${orderId}\nTotal Price: Rp. ${data.totalPrice}`);
+        document.getElementById('popup-order-id').textContent = orderId;
+        document.getElementById('popup-total-price').textContent = data.totalPrice;
+        document.getElementById('checkout-popup').style.display = 'block';
+        // alert(`Checkout successful!\nOrder ID: ${orderId}\nTotal Price: Rp. ${data.totalPrice}`);
       } else {
         alert('Error during checkout.');
       }
     })
     .catch(error => console.error('Error checking out:', error));
   }
+
+  document.querySelector('.close-popup').addEventListener('click', () => {
+    document.getElementById('checkout-popup').style.display = 'none';
+  });
+  
+  document.querySelector('.btn-close-popup').addEventListener('click', () => {
+    document.getElementById('checkout-popup').style.display = 'none';
+  });
+  
+
+  window.addEventListener('click', (event) => {
+    const popup = document.getElementById('checkout-popup');
+    if (event.target === popup) {
+      popup.style.display = 'none';
+    }
+  });
+  
 
   function handleAddItem(event) {
     const li = event.target.closest('li');
